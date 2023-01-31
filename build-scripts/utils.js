@@ -9,27 +9,32 @@ var path = require('path')
 const chalk = require('chalk');
 
 function deleteFolderRecursive(src) {
-  if (fs.existsSync(src)) {
-    fs.readdirSync(src).forEach(function(file, index){
-      var curPath = path.join(src, file)
-      if (fs.lstatSync(curPath).isDirectory()) { // recurse
-        deleteFolderRecursive(curPath)
-      } else { // delete file
-        fs.unlinkSync(curPath)
-      }
-    })
-    fs.rmdirSync(src)
-  }
+    if (fs.existsSync(src)) {
+        let dirs = fs.readdirSync(src);
+        for (let index = 0; index < dirs.length; index++) {
+            let file = dirs[index];
+            var curPath = path.join(src, file)
+            if (fs.lstatSync(curPath).isDirectory()) { // recurse
+                deleteFolderRecursive(curPath)
+            } else { // delete file
+                fs.unlinkSync(curPath)
+            }
+        }
+        if (fs.existsSync(src + "/.DS_Store")) {
+            fs.unlinkSync(src + "/.DS_Store")
+        }
+        fs.rmdirSync(src)
+    }
 }
 
 function hasInList(item, list) {
     var res = false
 
-    if(!list)
+    if (!list)
         return false
 
     list.forEach(one => {
-        if(one===item) {
+        if (one === item) {
             res = true
             return
         }
@@ -50,12 +55,12 @@ function copyRecursiveSync(src, dest, ignore_list) {
     var stats = exists && fs.statSync(src)
     var isDirectory = exists && stats.isDirectory()
     if (exists && isDirectory) {
-        if(!exists_dest)
+        if (!exists_dest)
             fs.mkdirSync(dest)
         fs.readdirSync(src).filter(item => !hasInList(item, ignore_list))
-                           .forEach(childItemName => {
-                                copyRecursiveSync(path.join(src, childItemName), path.join(dest, childItemName))
-                            })
+            .forEach(childItemName => {
+                copyRecursiveSync(path.join(src, childItemName), path.join(dest, childItemName))
+            })
     } else {
         fs.linkSync(src, dest)
     }
@@ -89,7 +94,7 @@ function resolveEnv() {
     var args = process.argv
 
     // we have an argument
-    if(args.length >= 3) {
+    if (args.length >= 3) {
         env = args[2]
     }
 
